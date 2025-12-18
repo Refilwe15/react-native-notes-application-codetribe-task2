@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -25,28 +27,41 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleRegister = async () => {
+    if (!username || !email || !password) {
+      Alert.alert("Error", "All fields are required");
+      return;
+    }
+
+    const user = { username, email, password };
+
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+      Alert.alert("Success", "Account created successfully");
+      navigation.replace("Login"); // ✅ Go to Login
+    } catch (error) {
+      Alert.alert("Error", "Registration failed");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Illustration */}
       <Image
         source={require("../assets/register.png")}
         style={styles.image}
         resizeMode="contain"
       />
 
-      {/* Headings */}
       <Text style={styles.welcome}>Welcome.</Text>
       <Text style={styles.subtitle}>
         Create your account to access our features.
       </Text>
 
-      {/* Inputs */}
       <View style={styles.inputGroup}>
         <TextInput
           placeholder="Username"
-          placeholderTextColor="#777"
           style={styles.input}
           value={username}
           onChangeText={setUsername}
@@ -54,7 +69,6 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
         <TextInput
           placeholder="Email"
-          placeholderTextColor="#777"
           style={styles.input}
           value={email}
           onChangeText={setEmail}
@@ -62,7 +76,6 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
         <TextInput
           placeholder="Password"
-          placeholderTextColor="#777"
           style={styles.input}
           value={password}
           onChangeText={setPassword}
@@ -70,15 +83,10 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         />
       </View>
 
-      {/* Create Button */}
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() => navigation.replace("Home")}
-      >
+      <TouchableOpacity style={styles.createButton} onPress={handleRegister}>
         <Text style={styles.createText}>CREATE</Text>
       </TouchableOpacity>
 
-      {/* Footer */}
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
         <Text style={styles.footerText}>
           Already have an account? <Text style={styles.link}>Sign in</Text>
@@ -97,30 +105,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingTop: 50,
   },
-  image: {
-    width: "100%",
-    height: 180,
-    marginBottom: 25,
-  },
-  welcome: {
-    color: "#333",
-    fontSize: 32,
-    fontWeight: "700",
-  },
-  subtitle: {
-    color: "#555",
-    fontSize: 18,
-    marginBottom: 35,
-  },
-  inputGroup: {
-    marginBottom: 40,
-  },
+  image: { width: "100%", height: 180, marginBottom: 25 },
+  welcome: { fontSize: 32, fontWeight: "700", color: "#333" },
+  subtitle: { fontSize: 18, color: "#555", marginBottom: 35 },
+  inputGroup: { marginBottom: 40 },
   input: {
     borderBottomWidth: 1,
     borderBottomColor: "#FFD43B",
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
     marginBottom: 25,
   },
   createButton: {
@@ -130,20 +123,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 25,
   },
-  createText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
-  footerText: {
-    color: "#555",
-    fontSize: 14,
-    textAlign: "center",
-  },
-  link: {
-    color: "#333",
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
+  createText: { fontSize: 16, fontWeight: "700", color: "#333" },
+  footerText: { textAlign: "center", color: "#555" },
+  link: { fontWeight: "600", textDecorationLine: "underline" },
 });

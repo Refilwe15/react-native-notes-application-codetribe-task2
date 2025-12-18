@@ -1,14 +1,50 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/AppNavigator";
 
-const AddNoteScreen: React.FC = () => {
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [category, setCategory] = useState<string>('Work');
+type Props = NativeStackScreenProps<RootStackParamList, "AddNote">;
 
-  const handleSave = () => {
-    Alert.alert('Note Saved', `Title: ${title}\nCategory: ${category}`);
+const AddNoteScreen: React.FC<Props> = ({ navigation }) => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState("Work");
+
+  const handleSaveNote = async () => {
+    if (!content.trim()) {
+      Alert.alert("Error", "Note content is required");
+      return;
+    }
+
+    const newNote = {
+      id: Date.now().toString(),
+      title,
+      content,
+      category,
+      dateAdded: new Date().toISOString(),
+    };
+
+    try {
+      const storedNotes = await AsyncStorage.getItem("notes");
+      const notes = storedNotes ? JSON.parse(storedNotes) : [];
+
+      notes.push(newNote);
+
+      await AsyncStorage.setItem("notes", JSON.stringify(notes));
+      Alert.alert("Success", "Note added successfully");
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert("Error", "Failed to save note");
+    }
   };
 
   return (
@@ -16,14 +52,14 @@ const AddNoteScreen: React.FC = () => {
       <Text style={styles.title}>Add New Note</Text>
 
       <TextInput
-        placeholder="Title"
+        placeholder="Title (optional)"
         style={styles.input}
         value={title}
         onChangeText={setTitle}
       />
 
       <TextInput
-        placeholder="Content"
+        placeholder="Note content"
         style={[styles.input, styles.textArea]}
         value={content}
         onChangeText={setContent}
@@ -34,8 +70,7 @@ const AddNoteScreen: React.FC = () => {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={category}
-          onValueChange={(itemValue: string) => setCategory(itemValue)}
-          style={styles.picker}
+          onValueChange={(value) => setCategory(value)}
         >
           <Picker.Item label="Work" value="Work" />
           <Picker.Item label="Study" value="Study" />
@@ -43,7 +78,7 @@ const AddNoteScreen: React.FC = () => {
         </Picker>
       </View>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+      <TouchableOpacity style={styles.saveButton} onPress={handleSaveNote}>
         <Text style={styles.saveButtonText}>Save Note</Text>
       </TouchableOpacity>
     </View>
@@ -55,68 +90,45 @@ export default AddNoteScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF7CC', // soft yellow background
+    backgroundColor: "#FFF7CC",
     padding: 25,
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
-    color: '#333',
+    fontWeight: "700",
     marginBottom: 25,
+    color: "#333",
   },
   input: {
-    backgroundColor: '#FFD43B', // bright yellow card
+    backgroundColor: "#FFD43B",
     borderRadius: 16,
     padding: 15,
     marginBottom: 20,
     fontSize: 16,
-    color: '#333', // dark text for readability
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
   },
   textArea: {
     height: 120,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
     marginBottom: 8,
+    color: "#333",
   },
   pickerContainer: {
-    backgroundColor: '#FFD43B', // match input cards
+    backgroundColor: "#FFD43B",
     borderRadius: 16,
     marginBottom: 25,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    color: '#333', // dark text in picker
   },
   saveButton: {
-    backgroundColor: '#333', // dark button like HomeScreen profile/add button
+    backgroundColor: "#333",
     paddingVertical: 16,
     borderRadius: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    alignItems: "center",
   },
   saveButtonText: {
-    color: '#FFF7CC', // soft yellow text
+    color: "#FFF7CC",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
