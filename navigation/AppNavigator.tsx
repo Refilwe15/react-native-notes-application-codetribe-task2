@@ -1,6 +1,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import EditProfile from "../screens/EditProfile";
 
 import LandingScreen from "../screens/LandingScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -40,6 +41,7 @@ const AppNavigator = () => {
         <Stack.Screen name="AddNote" component={AddNoteScreen} />
         <Stack.Screen name="EditNote" component={EditNoteScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
